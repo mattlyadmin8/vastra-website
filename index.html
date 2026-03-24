@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vastra Luxe</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    background: #fdfaf7;
+    color: #222;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 50px;
+    background: white;
+    border-bottom: 1px solid #eee;
+}
+.hero {
+    height: 80vh;
+    background: url('https://images.unsplash.com/photo-1610030469983-98e550d6193c') center/cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    padding: 40px;
+}
+.card {
+    background: white;
+    padding: 15px;
+    text-align: center;
+}
+button {
+    padding: 10px;
+    background: black;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Vastra Luxe</h1>
+</header>
+
+<section class="hero">
+<h2>Luxury Sarees & Dresses</h2>
+</section>
+
+<div class="products" id="products"></div>
+
+<script>
+async function loadProducts() {
+    const res = await fetch("https://your-backend-url/api/products");
+    const data = await res.json();
+
+    const container = document.getElementById("products");
+    container.innerHTML = "";
+
+    data.forEach(p => {
+        container.innerHTML += `
+        <div class="card">
+            <img src="${p.image}" width="100%">
+            <h3>${p.name}</h3>
+            <p>₹${p.price}</p>
+            <button onclick="buyNow(${p.price})">Buy Now</button>
+        </div>`;
+    });
+}
+
+loadProducts();
+</script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+async function buyNow(amount) {
+    const res = await fetch("https://your-backend-url/api/orders/create-order", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ amount })
+    });
+
+    const data = await res.json();
+
+    const options = {
+        key: "YOUR_KEY_ID",
+        amount: data.amount,
+        currency: "INR",
+        order_id: data.id,
+        handler: function () {
+            alert("Payment Successful!");
+        }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
+</script>
+
+</body>
+</html>
